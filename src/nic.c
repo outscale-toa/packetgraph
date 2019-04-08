@@ -334,6 +334,8 @@ static int nic_init(struct pg_brick *brick, struct pg_brick_config *config,
 	struct pg_nic_state *state;
 	struct pg_nic_config *nic_config;
 	struct rte_eth_txq_info qinfo;
+	struct rte_dev_iterator it;
+	uint16_t pi = 0;
 	int ret;
 
 	state = pg_brick_get_state(brick, struct pg_nic_state);
@@ -341,26 +343,14 @@ static int nic_init(struct pg_brick *brick, struct pg_brick_config *config,
 
 	/* Setup port id */
 	if (nic_config->ifname[0]) {
-		struct rte_devargs pg_cleanup(pg_rte_devargs_remove) devargs;
-
-		/* parse devargs */
-		if (rte_devargs_parse(&devargs, nic_config->ifname)) {
-			*errp = pg_error_new("Invalid parameter %s",
+		if (rte_dev_probe(nic_config->ifname) != 0) {
+			*errp = pg_error_new("Failed to attach port %s\n",
 					     nic_config->ifname);
 			return -1;
 		}
 
-		if (rte_eal_hotplug_add(devargs.bus->name, devargs.name,
-					 devargs.args) < 0) {
-			*errp = pg_error_new("Unable to hot plugging %s",
-					     devargs.args);
-			return -1;
-		}
-		if (rte_eth_dev_get_port_by_name(devargs.name,
-						 &state->portid) < 0) {
-			*errp = pg_error_new("Unable to get device %s",
-					     devargs.name);
-			return -1;
+		RTE_ETH_FOREACH_MATCHING_DEV(pi, nic_config->ifname, &it) {
+			state->portid = pi;
 		}
 	} else if (nic_config->portid < rte_eth_dev_count_avail()) {
 		state->portid = nic_config->portid;
