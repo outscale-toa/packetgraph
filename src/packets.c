@@ -59,6 +59,22 @@ struct rte_mbuf **pg_packets_append_blank(struct rte_mbuf **pkts,
 	return pkts;
 }
 
+struct rte_mbuf **pg_packets_prepend_blank(struct rte_mbuf **pkts,
+					  uint64_t pkts_mask,
+					  uint16_t len)
+{
+	char *tmp;
+
+	PG_FOREACH_BIT(pkts_mask, j) {
+		if (!pkts[j])
+			continue;
+		tmp = rte_pktmbuf_append(pkts[j], len);
+		if (!tmp)
+			return NULL;
+	}
+	return pkts;
+}
+
 #define PG_PACKETS_OPS_BUF(pkts, pkts_mask, buf, len, ops)	\
 	void *tmp;						\
 	PG_FOREACH_BIT(pkts_mask, j) {				\
