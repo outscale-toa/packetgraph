@@ -813,14 +813,34 @@ static void test_vtep_vnis(int flag)
 				continue;
 			}
 
+
+                        if (j == ((i - 1) % NB_VNIS)) {
+				g_assert(tmp_mask == 0x0000ff);
+			} else if (j == i % NB_VNIS){
+				g_assert(tmp_mask == 0x00ff00);
+			} else if (j == ((i + 1) % NB_VNIS)) {
+				// printf("==== NB_VNIS-tmp_mask == % " PRIx64 "\n", tmp_mask);
+				printf("==== NB_VNIS-i == % " PRId32 "\n", i);
+				printf("==== NB_VNIS-j == % " PRId32 "\n", j);
+				printf("==== NB_VNIS-okht == %lx " PRIx64 "\n", tmp_mask);
+				g_assert(tmp_mask == 0xff0000);
+			} else {
+				g_assert(!tmp_mask);
+			}
+			/*			
 			if (j == ((i - 1) % NB_VNIS))
 				g_assert(tmp_mask == 0x0000ff);
 			else if (j == i % NB_VNIS)
 				g_assert(tmp_mask == 0x00ff00);
 			else if (j == ((i + 1) % NB_VNIS))
-				g_assert(tmp_mask == 0xff0000);
+				printf("==== NB_VNIS-i == % " PRId32 "\n", i);
+			printf("==== NB_VNIS-j == % " PRId32 "\n", j);
+			printf("==== NB_VNIS-okht == %lx " PRIx64 "\n", tmp_mask);
+			
+			g_assert(tmp_mask == 0xff0000);
 			else
 				g_assert(!tmp_mask);
+			*/
 		}
 
 		if (!(flag & PG_VTEP_NO_COPY)) {
